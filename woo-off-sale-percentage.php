@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Off-Sale Percentage Data
  * Plugin URI: https://github.com/de-er-kid/woo-off-sale-percentage
  * Description: Replace the 'sale' badge in single product page to product's off price persentage.
- * Version: 1.1
+ * Version: 1.0.1
  * Author: Sinan
  * Author URI: https://github.com/de-er-kid
  * License: GPL-2.0+
