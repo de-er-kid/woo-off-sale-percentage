@@ -1,13 +1,15 @@
 <?php
 /**
  * Plugin Name: WooCommerce Off-Sale Percentage Data
- * Plugin URI: #
- * Description: Use real off sale percentage instead of 'sale' in in sale badge.
- * Version: 1.0
+ * Plugin URI: https://github.com/de-er-kid/woo-off-sale-percentage
+ * Description: Replace the 'sale' badge in single product page to product's off price persentage.
+ * Version: 1.1
  * Author: Sinan
  * Author URI: https://github.com/de-er-kid
- * License: GPLv2 or later
-**/
+ * License: GPL-2.0+
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+ * GitHub Plugin URI: de-er-kid/woo-off-sale-percentage
+ **/
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
