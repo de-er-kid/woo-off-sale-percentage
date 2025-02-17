@@ -12,12 +12,12 @@
  **/
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit // Exit if accessed directly.
+	exit; // Exit if accessed directly.
 }
 
 // Display the Woocommerce Discount Percentage on the Sale Badge for variable products and single products
 add_filter( 'woocommerce_sale_flash', 'display_percentage_on_sale_badge', 20, 3 );
-function display_percentage_on_sale_badge( $html, $post, $prod_uct ) {
+function display_percentage_on_sale_badge( $html, $post, $product ) {
 
   if( $product->is_type('variable')){
       $percentages = array();
@@ -65,7 +65,7 @@ function display_percentage_on_sale_badge( $html, $post, $prod_uct ) {
           return $html;
       }
   }
-  return '<span class="onsale">' . esc_html__( '↓', 'woocommerce' ) . ' '. $percentage . '</span>'
+  return '<span class="onsale">' . esc_html__( '↓', 'woocommerce' ) . ' '. $percentage . '</span>';
 }
 
 // New: Add shortcode
