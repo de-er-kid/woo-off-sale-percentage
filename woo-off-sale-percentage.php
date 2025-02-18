@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WooCommerce Off-Sale Percentage Data
  * Plugin URI: https://github.com/de-er-kid/woo-off-sale-percentage
- * Description: Replace the 'sale' badge in single product page to product's off price persentage.
+ * Description: Replace the 'sale' badge in single product page to product's off price percentage.
  * Version: 1.0.1
  * Author: Sinan
  * Author URI: https://github.com/de-er-kid
@@ -15,58 +15,65 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-// Display the Woocommerce Discount Percentage on the Sale Badge for variable products and single products
+// Display the WooCommerce Discount Percentage on the Sale Badge for variable products and single products
 add_filter( 'woocommerce_sale_flash', 'display_percentage_on_sale_badge', 20, 3 );
 function display_percentage_on_sale_badge( $html, $post, $product ) {
+    if ( ! is_a( $product, 'WC_Product' ) ) {
+        $product = wc_get_product( $post->ID );
+    }
 
-  if( $product->is_type('variable')){
-      $percentages = array();
+    if ( ! $product || ! $product->is_on_sale() ) {
+        return $html;
+    }
 
-      // This will get all the variation prices and loop throughout them
-      $prices = $product->get_variation_prices();
+    if ( $product->is_type('variable') ) {
+        $percentages = array();
+        $prices = $product->get_variation_prices();
 
-      foreach( $prices['price'] as $key => $price ){
-          // Only on sale variations
-          if( $prices['regular_price'][$key] !== $price ){
-              // Calculate and set in the array the percentage for each variation on sale
-              $percentages[] = round( 100 - ( floatval($prices['sale_price'][$key]) / floatval($prices['regular_price'][$key]) * 100 ) );
-          }
-      }
-      // Displays maximum discount value
-      $percentage = max($percentages) . '%';
+        foreach( $prices['price'] as $key => $price ) {
+            if( $prices['regular_price'][$key] !== $price ) {
+                $percentages[] = round( 100 - ( floatval($prices['sale_price'][$key]) / floatval($prices['regular_price'][$key]) * 100 ) );
+            }
+        }
+        $percentage = max($percentages) . '%';
+    } elseif ( $product->is_type('grouped') ) {
+        $percentages = array();
+        $children_ids = $product->get_children();
 
-  } elseif( $product->is_type('grouped') ){
-      $percentages = array();
+        foreach( $children_ids as $child_id ) {
+            $child_product = wc_get_product($child_id);
 
-       // This will get all the variation prices and loop throughout them
-      $children_ids = $product->get_children();
+            if ( $child_product ) {
+                $regular_price = (float) $child_product->get_regular_price();
+                $sale_price    = (float) $child_product->get_sale_price();
 
-      foreach( $children_ids as $child_id ){
-          $child_product = wc_get_product($child_id);
+                if ( $sale_price > 0 ) {
+                    $percentages[] = round(100 - ($sale_price / $regular_price * 100));
+                }
+            }
+        }
+        $percentage = max($percentages) . '%';
+    } else {
+        $regular_price = (float) $product->get_regular_price();
+        $sale_price    = (float) $product->get_sale_price();
 
-          $regular_price = (float) $child_product->get_regular_price();
-          $sale_price    = (float) $child_product->get_sale_price();
+        if ( $sale_price > 0 ) {
+            $percentage = round(100 - ($sale_price / $regular_price * 100)) . '%';
+        } else {
+            return $html;
+        }
+    }
 
-          if ( $sale_price != 0 || ! empty($sale_price) ) {
-              // Calculate and set in the array the percentage for each child on sale
-              $percentages[] = round(100 - ($sale_price / $regular_price * 100));
-          }
-      }
-     // Displays maximum discount value
-      $percentage = max($percentages) . '%';
-
-  } else {
-      $regular_price = (float) $product->get_regular_price();
-      $sale_price    = (float) $product->get_sale_price();
-
-      if ( $sale_price != 0 || ! empty($sale_price) ) {
-          $percentage    = round(100 - ($sale_price / $regular_price * 100)) . '%';
-      } else {
-          return $html;
-      }
-  }
-  return '<span class="onsale">' . esc_html__( '↓', 'woocommerce' ) . ' '. $percentage . '</span>';
+    return '<span class="onsale">' . esc_html__( 'Save', 'woocommerce' ) . ' ' . esc_html($percentage) . '</span>'; 
 }
 
-// New: Add shortcode
-add_shortcode('onsale_percentage_html','display_percentage_on_sale_badge');
+// New: Add a separate function for shortcode to avoid parameter mismatch
+function onsale_percentage_shortcode() {
+    global $post;
+    $product = wc_get_product( $post->ID );
+    if ( $product ) {
+        return display_percentage_on_sale_badge( '', $post, $product );
+    }
+    return '';
+}
+add_shortcode('onsale_percentage_html', 'onsale_percentage_shortcode');
